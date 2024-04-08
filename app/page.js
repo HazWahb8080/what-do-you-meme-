@@ -47,7 +47,9 @@ export default function Home() {
                     <span className="items-center justify-center flex w-full py-10">
                       <button
                         className="button"
-                        onClick={() => router.push(`/game?P=${players_number}`)}
+                        onClick={() =>
+                          router.push(`/game?id=null&P=${players_number}`)
+                        }
                       >
                         Start game
                       </button>

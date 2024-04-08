@@ -13,3 +13,9 @@ export const chosenCaptionsState = atom({
   key: "chosenCaptionsState",
   default: [],
 });
+
+// for the timer
+export const IsRunningstate = atom({
+  key: "IsRunningstate",
+  default: true,
+});
