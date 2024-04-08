@@ -7,11 +7,21 @@ import { memes } from "../data/data";
 import { captions } from "../data/data";
 import { useRecoilState } from "recoil";
 import { randomCaptionsState, randomMemesState } from "../atoms/atoms";
+import {
+  addDoc,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
+import { db } from "@/firebase";
 
 function GamePage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const players_number = searchParams.get("P");
+  const docId = searchParams.get("id");
   const [selectedCaptions, setSelectedCaptions] = useState([]);
   const [selectedCaption, setSelectedCaption] = useState();
   const [randomCaptions, setRandomCaptions] =
@@ -20,27 +30,7 @@ function GamePage() {
   const [round, setRound] = useState(1);
   const [activeMeme, setActiveMeme] = useState();
 
-  const getRandomMemes = () => {
-    const numStringsToReturn = 10;
-    const randomIndices = [];
-    const randomMemes = [];
-
-    // Generate 7 unique random indices
-    while (randomIndices.length < numStringsToReturn) {
-      const randomIndex = Math.floor(Math.random() * memes?.length);
-      if (!randomIndices.includes(randomIndex)) {
-        randomIndices.push(randomIndex);
-      }
-    }
-
-    // Get the strings at the randomly generated indices
-    randomIndices.forEach((index) => {
-      randomMemes.push(memes[index]);
-    });
-
-    setRandomMemes(randomMemes);
-  };
-  const getRandomCaptions = () => {
+  const getRandomCaptionsAndMemes = async () => {
     const numStringsToReturn = 7;
     const randomIndices = [];
     const randomStrings = [];
@@ -58,13 +48,45 @@ function GamePage() {
       randomStrings.push(captions[index]);
     });
 
-    setRandomCaptions(randomStrings);
+    await setDoc(doc(db, "games", docId), {
+      captions: randomStrings,
+    });
+
+    const randomIndicesMemes = [];
+    const randomMemes = [];
+
+    // Generate 7 unique random indices
+    while (randomIndicesMemes.length < numStringsToReturn) {
+      const randomIndex = Math.floor(Math.random() * memes?.length);
+      if (!randomIndicesMemes.includes(randomIndex)) {
+        randomIndicesMemes.push(randomIndex);
+      }
+    }
+
+    // Get the strings at the randomly generated indices
+    randomIndicesMemes.forEach((index) => {
+      randomMemes.push(memes[index]);
+    });
+
+    await updateDoc(doc(db, "games", docId), {
+      memes: randomMemes,
+    });
   };
+
   useEffect(() => {
     if (randomCaptions.length > 0 && randomMemes.length > 0) return;
-    getRandomCaptions();
-    getRandomMemes();
-  }, [randomCaptions, randomMemes]);
+    const fetchData = async () => {
+      const gameDoc = await getDoc(doc(db, "games", docId));
+      if (gameDoc.exists()) {
+        setRandomCaptions(gameDoc.data().captions);
+        setRandomMemes(gameDoc.data().memes);
+      }
+      if (!gameDoc.exists()) {
+        getRandomCaptionsAndMemes();
+      }
+    };
+    fetchData();
+  }, []);
   useEffect(() => {
     setActiveMeme(randomMemes[round]);
   }, [round, randomMemes]);
