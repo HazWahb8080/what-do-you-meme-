@@ -80,7 +80,7 @@ export default function Home() {
                     <p
                       className="bg-white text-black rounded-full
                     px-4 py-1 "
-                    >{`http://localhost:3000?id=${roomId}&P=${players_number}`}</p>
+                    >{`${window.location.href}?id=${roomId}&P=${players_number}`}</p>
                   </span>
 
                   <RoomProvider id={roomId} initialPresence={{}}>
