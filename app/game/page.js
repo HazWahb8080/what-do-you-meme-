@@ -28,7 +28,8 @@ import {
   useEventListener,
   useStorage,
 } from "@/liveblocks.config";
-import Timer, { reset } from "../Timer";
+import Timer from "../Timer";
+import Alert from "../flagsmith/Alert";
 
 function GamePage() {
   const searchParams = useSearchParams();
@@ -173,7 +174,10 @@ function GamePage() {
     );
   }
   return (
-    <div className="relative min-h-screen w-full items-center justify-center flex flex-col">
+    <div className="relative min-h-screen w-full items-center justify-center flex flex-col overflow-hidden">
+      <div className="sticky top-0 w-full z-10">
+        <Alert />
+      </div>
       {!showResults ? (
         <div
           className="relative min-h-screen w-full items-center justify-center
@@ -250,7 +254,7 @@ function GamePage() {
             Play Again
           </button>
         ) : (
-          <span className="flex space-x-4">
+          <span className="flex space-x-4 z-50">
             <button
               onClick={() =>
                 !isRunning &&
@@ -259,7 +263,8 @@ function GamePage() {
                 setChosenCaptions([]),
                 setShowResults(false))
               }
-              className="text-white font-bold text-xl bg-[#06051D] px-6 py-2 rounded-full"
+              className="text-white font-bold text-xl 
+              bg-[#06051D] px-6 py-2 shadow-lg shadow-white/10 border border-white rounded-full z-50"
             >
               <Timer resetTimer={round} />
             </button>
