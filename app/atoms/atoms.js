@@ -9,3 +9,7 @@ export const randomMemesState = atom({
   key: "randomMemesState",
   default: [],
 });
+export const chosenCaptionsState = atom({
+  key: "chosenCaptionsState",
+  default: [],
+});

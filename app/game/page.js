@@ -1,8 +1,9 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { Children, useEffect, useState } from "react";
 import { memes } from "../data/data";
 import { captions } from "../data/data";
 import { useRecoilState } from "recoil";
@@ -16,19 +17,32 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "@/firebase";
+import {
+  RoomProvider,
+  useBroadcastEvent,
+  useEventListener,
+} from "@/liveblocks.config";
 
 function GamePage() {
   const searchParams = useSearchParams();
+  const [currentUserName, setCurrentUserName] = useState("");
   const router = useRouter();
-  const players_number = searchParams.get("P");
   const docId = searchParams.get("id");
   const [selectedCaptions, setSelectedCaptions] = useState([]);
   const [selectedCaption, setSelectedCaption] = useState();
   const [randomCaptions, setRandomCaptions] =
     useRecoilState(randomCaptionsState);
   const [randomMemes, setRandomMemes] = useRecoilState(randomMemesState);
+  const [chosenCaptionsState, setChosenCaptionsState] =
+    useRecoilState(chosenCaptionsState);
   const [round, setRound] = useState(1);
   const [activeMeme, setActiveMeme] = useState();
+  const broadcast = useBroadcastEvent();
+  useEventListener(({ event, user, connectionId }) => {
+    if (event.type === "CAPTION") {
+      setChosenCaptionsState([...chosenCaptionsState, message]);
+    }
+  });
 
   const getRandomCaptionsAndMemes = async () => {
     const numStringsToReturn = 7;
@@ -91,8 +105,13 @@ function GamePage() {
     setActiveMeme(randomMemes[round]);
   }, [round, randomMemes]);
 
-  // multiplayer functionality
-
+  if (!docId) {
+    return (
+      <div className="min-h-screen items-center justify-center flex bg-black text-white">
+        something went wrong
+      </div>
+    );
+  }
   return (
     <div
       className="relative min-h-screen w-full items-center justify-center
@@ -106,13 +125,16 @@ function GamePage() {
       </div>
       <div
         className="z-50 py-12 justify-items-center
-       gap-y-10 grid grid-cols-2 max-h-screen overflow-y-scroll"
+       gap-y-10 grid grid-cols-1 xl:grid-cols-2 max-h-screen overflow-y-scroll"
       >
         {randomCaptions
           .filter((caption) => !selectedCaptions.includes(caption))
           .map((caption) => (
             <div
-              onClick={() => setSelectedCaption(caption)}
+              onClick={() => {
+                setSelectedCaption(caption);
+                broadcast({ type: "CAPTION", message: selectedCaption });
+              }}
               key={caption}
               className={`bg-[#06051D] cursor-pointer rounded-xl
              h-[300px] w-[200px] py-6 px-6 text-white text-xl 
