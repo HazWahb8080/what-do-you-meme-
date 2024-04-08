@@ -19,7 +19,7 @@ const Timer = ({ resetTimer }) => {
   }, [isRunning]);
 
   useEffect(() => {
-    if (time >= 30) {
+    if (time >= 20) {
       setIsRunning(false);
     }
   }, [time]);
